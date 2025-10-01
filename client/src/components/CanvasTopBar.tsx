@@ -11,6 +11,7 @@ import {
   RedoOutlined,
   PictureOutlined,
   FontSizeOutlined,
+  DownloadOutlined
 } from "@ant-design/icons";
 import { useCanvas } from "../context/CanvasContext";
 import { useState, useEffect } from "react";
@@ -25,6 +26,11 @@ const Navbar = () => {
     addImage,
     updateCanvasHeight,
     updateCanvasWidth,
+    undo,
+    redo,
+    isHistoryEmpty,
+    isRedoEmpty,
+    downloadCanvasAsImage
   } = useCanvas();
   const [loading, setLoading] = useState(false);
   const [canvasWidth, setCanvasWidth] = useState<number | null>(500);
@@ -61,6 +67,8 @@ const Navbar = () => {
         justifyContent: "space-between",
         background: "#fff",
         borderBottom: "1px solid #eee",
+        paddingLeft: "16px",
+        paddingRight: "16px",
       }}
     >
       {/* Project Name */}
@@ -91,12 +99,13 @@ const Navbar = () => {
         </Tooltip>
 
         <Tooltip title="Undo" placement="bottom">
-          <Button icon={<UndoOutlined />} />
+          <Button icon={<UndoOutlined />} onClick={undo} disabled={isHistoryEmpty}/>
         </Tooltip>
 
         <Tooltip title="Redo" placement="bottom">
-          <Button icon={<RedoOutlined />} />
+          <Button icon={<RedoOutlined />} onClick={redo} disabled={isRedoEmpty}/>
         </Tooltip>
+        <Button onClick={() => downloadCanvasAsImage()}><DownloadOutlined/></Button>
       </div>
 
       {/* Canvas Size */}

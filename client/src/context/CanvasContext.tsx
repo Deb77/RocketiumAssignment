@@ -24,6 +24,11 @@ interface CanvasContextType {
   selectedLayerId: string | null;
   selectLayer: (id?: string) => void;
   moveLayer: (direction: "up" | "down", id?: string) => void;
+  undo: () => void;
+  redo: () => void;
+  isHistoryEmpty: boolean;
+  isRedoEmpty: boolean;
+  downloadCanvasAsImage: (filename?: string) => void;
 }
 
 // Create context
@@ -42,6 +47,8 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
   const [version, setVersion] = useState(1);
   const [layers, setLayers] = useState<LayeredObject[]>([]);
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
+  const [history, setHistory] = useState<string[]>([]);
+  const [redoStack, setRedoStack] = useState<string[]>([]);
 
   // Update zIndex for canvas objects
   const updateZIndices = () => {
@@ -105,6 +112,45 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
     canvas.setActiveObject(objects[newIdx]);
   };
 
+  const saveHistory = () => {
+    if (!canvas) return;
+    const json = canvas.toJSON();
+    setHistory((prev) => [...prev, JSON.stringify(json)]);
+    setRedoStack([]); // clear redo stack on new action
+  };
+
+  useEffect(() => {
+    if (!canvas) return;
+    const json = canvas.toJSON();
+    setHistory((prev) => [...prev, JSON.stringify(json)]);
+
+    attachHistoryListeners();
+
+    return () => {
+      detachHistoryListeners();
+    };
+  }, [canvas]);
+
+  const objCallbacks = () => {
+    if (!canvas) return;
+    saveHistory();
+    updateLayers();
+  };
+
+  const attachHistoryListeners = () => {
+    if (!canvas) return;
+    canvas.on("object:added", objCallbacks);
+    canvas.on("object:modified", objCallbacks);
+    canvas.on("object:removed", objCallbacks);
+  };
+
+  const detachHistoryListeners = () => {
+    if (!canvas) return;
+    canvas.off("object:added");
+    canvas.off("object:modified");
+    canvas.off("object:removed");
+  };
+
   useEffect(() => {
     if (!canvas) return;
 
@@ -146,6 +192,47 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
         ][]
       ).forEach(([event, fn]) => canvas.off(event, fn));
   }, [canvas]);
+
+  const undo = async () => {
+    if (!canvas || history.length <= 1) return;
+
+    const newHistory = [...history];
+    const currentState = newHistory.pop()!; // this is the state being undone
+    const prevState = newHistory[newHistory.length - 1];
+
+    // push the current state to redoStack so redo can bring it back
+    setRedoStack((prev) => [...prev, currentState]);
+    setHistory(newHistory);
+
+    try {
+      detachHistoryListeners();
+      await canvas.loadFromJSON(prevState);
+      canvas.renderAll();
+    } finally {
+      attachHistoryListeners();
+      updateLayers();
+    }
+  };
+
+  const redo = async () => {
+    if (!canvas || redoStack.length === 0) return;
+
+    const newRedoStack = [...redoStack];
+    const redoState = newRedoStack.pop()!;
+
+    // Save current state to history BEFORE applying redo
+    setHistory((prev) => [...prev, redoState]);
+    setRedoStack(newRedoStack);
+
+    try {
+      detachHistoryListeners();
+      await canvas.loadFromJSON(redoState);
+      canvas.renderAll();
+    } finally {
+      attachHistoryListeners();
+      updateLayers();
+    }
+  };
 
   // Add rectangle
   const addRectangle = () => {
@@ -207,9 +294,11 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
   };
 
   const updateProperty = (prop: string, value: any) => {
+    if (!selectedObject) return;
     selectedObject?.set(prop as any, value);
     selectedObject?.setCoords();
     canvas?.renderAll();
+    canvas?.fire("object:modified", { target: selectedObject });
   };
 
   const updateCanvasHeight = (newCanvasHeight: number | null) => {
@@ -224,6 +313,18 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
       canvas.setWidth(Number(newCanvasWidth));
       canvas.renderAll();
     }
+  };
+
+  const downloadCanvasAsImage = (filename: string = "canvas.png") => {
+    if (!canvas) return;
+
+    const dataURL = canvas.toDataURL();
+
+    const link = document.createElement("a");
+    link.href = dataURL;
+    link.download = filename;
+
+    link.click();
   };
 
   const value: CanvasContextType = {
@@ -242,6 +343,11 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
     moveLayer,
     selectedLayerId,
     selectLayer,
+    undo,
+    redo,
+    isHistoryEmpty: history.length === 1,
+    isRedoEmpty: redoStack.length === 0,
+    downloadCanvasAsImage,
   };
 
   return (

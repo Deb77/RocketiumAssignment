@@ -22,11 +22,11 @@ function CanvasBoard() {
       initCanvas.renderAll();
       setCanvas(initCanvas);
 
-      initCanvas.on("object:moving", (event) =>
-        handleObjectMoving(initCanvas, event.target, guidelines, setGuidelines)
-      );
+      // initCanvas.on("object:moving", (event) =>
+      //   handleObjectMoving(initCanvas, event.target, guidelines, setGuidelines)
+      // );
 
-      initCanvas.on("object:modified", () => clearGuidelines(initCanvas));
+      // initCanvas.on("object:modified", () => clearGuidelines(initCanvas));
 
       return () => {
         initCanvas.dispose();
