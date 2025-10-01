@@ -1,26 +1,31 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import "./App.css";
-import CanvasBoard from "./components/CanvasBoard";
-import CanvasTopBar from "./components/CanvasTopBar";
 import { CanvasProvider } from "./context/CanvasContext";
-import { Layout } from "antd";
-import { Content } from "antd/es/layout/layout";
-import CanvasPropertiesPanel from "./components/PropertiesPanel";
-import LayersPanel from "./components/LayersPanel";
+
+import HomePage from "./pages/HomePage";
+import AboutPage from "./pages/AboutPage";
+import EditorPage from "./pages/EditorPage";
 
 function App() {
   return (
-    <CanvasProvider>
-      <Layout>
-        <CanvasTopBar />
-        <Layout>
-          <LayersPanel />
-          <Content>
-            <CanvasBoard />
-          </Content>
-          <CanvasPropertiesPanel />
-        </Layout>
-      </Layout>
-    </CanvasProvider>
+    <Router>
+      <Routes>
+        {/* Landing page */}
+        <Route path="/" element={<HomePage />} />
+        {/* Canvas Editor page */}
+        <Route
+          path="/editor"
+          element={
+            <CanvasProvider>
+              <EditorPage />
+            </CanvasProvider>
+          }
+        />
+        {/* About page */}
+        <Route path="/about" element={<AboutPage />} />
+      </Routes>
+    </Router>
   );
 }
 

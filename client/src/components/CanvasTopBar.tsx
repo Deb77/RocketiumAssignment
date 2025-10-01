@@ -11,7 +11,8 @@ import {
   RedoOutlined,
   PictureOutlined,
   FontSizeOutlined,
-  DownloadOutlined
+  DownloadOutlined,
+  SaveOutlined
 } from "@ant-design/icons";
 import { useCanvas } from "../context/CanvasContext";
 import { useState, useEffect } from "react";
@@ -30,7 +31,8 @@ const Navbar = () => {
     redo,
     isHistoryEmpty,
     isRedoEmpty,
-    downloadCanvasAsImage
+    downloadCanvasAsImage,
+    saveCanvas
   } = useCanvas();
   const [loading, setLoading] = useState(false);
   const [canvasWidth, setCanvasWidth] = useState<number | null>(500);
@@ -106,6 +108,9 @@ const Navbar = () => {
           <Button icon={<RedoOutlined />} onClick={redo} disabled={isRedoEmpty}/>
         </Tooltip>
         <Button onClick={() => downloadCanvasAsImage()}><DownloadOutlined/></Button>
+         <Tooltip title="Save" placement="bottom">
+          <Button icon={<SaveOutlined />} onClick={saveCanvas}/>
+        </Tooltip>
       </div>
 
       {/* Canvas Size */}

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import * as fabric from "fabric";
+import { useLocation } from "react-router-dom";
 
 interface LayeredObject extends fabric.FabricObject {
   id?: string;
@@ -29,6 +30,7 @@ interface CanvasContextType {
   isHistoryEmpty: boolean;
   isRedoEmpty: boolean;
   downloadCanvasAsImage: (filename?: string) => void;
+  saveCanvas: () => Promise<void>;
 }
 
 // Create context
@@ -49,6 +51,10 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
   const [history, setHistory] = useState<string[]>([]);
   const [redoStack, setRedoStack] = useState<string[]>([]);
+
+  const location = useLocation();
+  const query = new URLSearchParams(location.search);
+  const canvasId = query.get("canvasId");
 
   // Update zIndex for canvas objects
   const updateZIndices = () => {
@@ -120,16 +126,27 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    if (!canvas) return;
-    const json = canvas.toJSON();
-    setHistory((prev) => [...prev, JSON.stringify(json)]);
+  if (!canvas || !canvasId) return;
 
-    attachHistoryListeners();
+  const loadCanvas = async () => {
+    try {
+      const res = await fetch(`http://localhost:9000/api/canvas/${canvasId}`);
+      if (!res.ok) throw new Error("Canvas not found");
+      const data = await res.json();
 
-    return () => {
       detachHistoryListeners();
-    };
-  }, [canvas]);
+      await canvas.loadFromJSON(data.data);
+        canvas.renderAll();
+        saveHistory(); 
+      attachHistoryListeners();
+      updateLayers();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  loadCanvas();
+}, [canvas, canvasId]);
 
   const objCallbacks = () => {
     if (!canvas) return;
@@ -149,6 +166,22 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
     canvas.off("object:added");
     canvas.off("object:modified");
     canvas.off("object:removed");
+  };
+
+  const saveCanvas = async () => {
+    if (!canvas) return;
+    const json = JSON.stringify(canvas.toJSON());
+    const imageUrl = canvas.toDataURL();
+
+    await fetch(`http://localhost:9000/api/canvas/${canvasId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: canvasId,
+        data: json,
+        image: imageUrl
+      }),
+    });
   };
 
   useEffect(() => {
@@ -302,17 +335,19 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
   };
 
   const updateCanvasHeight = (newCanvasHeight: number | null) => {
-    if (canvas) {
-      canvas.setWidth(Number(newCanvasHeight));
-      canvas.renderAll();
-    }
+    // TODO: fix -> crashing sometimes
+    // if (canvas) {
+    //   canvas.setWidth(Number(newCanvasHeight));
+    //   canvas.renderAll();
+    // }
   };
 
   const updateCanvasWidth = (newCanvasWidth: number | null) => {
-    if (canvas) {
-      canvas.setWidth(Number(newCanvasWidth));
-      canvas.renderAll();
-    }
+    // TODO: fix -> crashing sometimes
+    // if (canvas) {
+    //   canvas.setWidth(Number(newCanvasWidth));
+    //   canvas.renderAll();
+    // }
   };
 
   const downloadCanvasAsImage = (filename: string = "canvas.png") => {
@@ -348,6 +383,7 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
     isHistoryEmpty: history.length === 1,
     isRedoEmpty: redoStack.length === 0,
     downloadCanvasAsImage,
+    saveCanvas,
   };
 
   return (
