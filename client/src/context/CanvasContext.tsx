@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef } from "react";
+import { io, Socket } from "socket.io-client";
 import type { ReactNode } from "react";
 import * as fabric from "fabric";
 import { useLocation } from "react-router-dom";
@@ -51,6 +52,7 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
   const [history, setHistory] = useState<string[]>([]);
   const [redoStack, setRedoStack] = useState<string[]>([]);
+  const socketRef = useRef<Socket | null>(null);
 
   const location = useLocation();
   const query = new URLSearchParams(location.search);
@@ -148,11 +150,51 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
   loadCanvas();
 }, [canvas, canvasId]);
 
+useEffect(() => {
+  if (!canvas || !canvasId) return;
+
+  const s = io("http://localhost:9000"); 
+  socketRef.current = s;
+
+  s.emit("join-canvas", canvasId);
+
+  return () => {
+    s.disconnect();
+  };
+}, [canvas, canvasId]);
+
+
+useEffect(() => {
+  if (!canvas || !canvasId || !socketRef.current) return;
+
+  const socket = socketRef.current;
+
+  socket.on("canvas-update", (payload: { canvasId: string; json: any }) => {
+    if (payload.canvasId !== canvasId) return;
+
+    detachHistoryListeners();
+
+    canvas.loadFromJSON(payload.json).then(() => {
+      canvas.renderAll();
+      updateLayers();
+      saveHistory();
+      attachHistoryListeners();
+    }).catch(() => {
+      attachHistoryListeners();
+    })
+  });
+
+  return () => {
+    socket.off("canvas-update");
+  };
+}, [canvas, canvasId]);
+
   const objCallbacks = () => {
-    if (!canvas) return;
+  if (!canvas || !canvasId) return;
     saveHistory();
     updateLayers();
-  };
+    socketRef.current?.emit("canvas-update", { canvasId, json: JSON.stringify(canvas.toJSON()) });
+};
 
   const attachHistoryListeners = () => {
     if (!canvas) return;
@@ -241,6 +283,7 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
       detachHistoryListeners();
       await canvas.loadFromJSON(prevState);
       canvas.renderAll();
+      socketRef.current?.emit("canvas-update", { canvasId, json: prevState });
     } finally {
       attachHistoryListeners();
       updateLayers();
@@ -261,6 +304,7 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
       detachHistoryListeners();
       await canvas.loadFromJSON(redoState);
       canvas.renderAll();
+      socketRef.current?.emit("canvas-update", { canvasId, json: redoState });
     } finally {
       attachHistoryListeners();
       updateLayers();
