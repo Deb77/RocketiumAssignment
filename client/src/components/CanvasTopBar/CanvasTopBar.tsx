@@ -24,6 +24,7 @@ import { useCanvasActions } from "../../context/CanvasContexts";
 import { getBase64 } from "../../helpers/imageUploadHelpers";
 import { useAppDispatch, useAppSelector } from "../../store";
 import { setCanvasHeight, setCanvasWidth } from "../../store/uiSlice";
+import api from "../../api";
 import styles from "./CanvasTopBar.module.css";
 
 const { Header } = Layout;
@@ -43,7 +44,7 @@ const CanvasTopBar = () => {
   const dispatch = useAppDispatch();
   const { canvasWidth, canvasHeight, isHistoryEmpty, isRedoEmpty } =
     useAppSelector((state) => state.ui);
-  const token = useAppSelector((s) => s.auth.token);
+
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const canvasId = params.get("canvasId");
@@ -79,23 +80,13 @@ const CanvasTopBar = () => {
       return;
     }
     try {
-      const res = await fetch(
-        `http://localhost:9000/api/canvas/${canvasId}/share-email`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ email: shareEmail.trim() }),
-        }
-      );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Failed to share");
+      await api.post(`/canvas/${canvasId}/share-email`, {
+        email: shareEmail.trim(),
+      });
       message.success("Collaborator added");
       closeShare();
     } catch (e: any) {
-      message.error(e.message);
+      message.error(e.response?.data?.error || e.message || "Failed to share");
     }
   };
 

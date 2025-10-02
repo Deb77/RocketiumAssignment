@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import type { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
 import * as fabric from "fabric";
-import { SERVER_URL } from "./constants";
 
 interface Args {
   canvas: fabric.Canvas | null;
@@ -19,7 +18,7 @@ export const useCanvasSocket = ({ canvas, canvasId, socketRef, attachHistoryList
   useEffect(() => {
     if (!canvas || !canvasId) return;
 
-    const s = io(SERVER_URL);
+    const s = io(import.meta.env.VITE_SERVER_URL);
     socketRef.current = s;
     s.emit("join-canvas", canvasId);
 

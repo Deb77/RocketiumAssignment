@@ -3,6 +3,7 @@ import { Card, Form, Input, Button, Typography, Alert } from "antd";
 import { useNavigate, Link } from "react-router-dom";
 import { useAppDispatch } from "../store";
 import { loginSuccess } from "../store/authSlice";
+import api from "../api"; // Axios instance
 
 const { Title, Paragraph } = Typography;
 
@@ -16,17 +17,11 @@ const LoginPage = () => {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:9000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Login failed");
+      const { data } = await api.post("/api/auth/login", values);
       dispatch(loginSuccess({ token: data.token, user: data.user }));
       navigate("/projects");
     } catch (e: any) {
-      setError(e.message);
+      setError(e.response?.data?.message || e.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -41,7 +36,7 @@ const LoginPage = () => {
           <Form.Item name="email" label="Email" rules={[{ required: true, type: "email" }]}>
             <Input placeholder="you@example.com" />
           </Form.Item>
-          <Form.Item name="password" label="Password" rules={[{ required: true }] }>
+          <Form.Item name="password" label="Password" rules={[{ required: true }]}>
             <Input.Password placeholder="••••••••" />
           </Form.Item>
           <Button type="primary" htmlType="submit" block loading={loading}>Login</Button>

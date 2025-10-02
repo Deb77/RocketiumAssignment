@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Spin, message, Typography } from "antd";
 import CanvasList from "../components/CanvasList/CanvasList";
 import CreateCanvasModal from "../components/CreateCanvasModal/CreateCanvasModal";
-import { useAppSelector } from "../store";
+import api  from "../api"; 
 
 const { Title } = Typography;
 
@@ -21,19 +21,13 @@ export default function HomePage() {
   const [newCanvasName, setNewCanvasName] = useState("");
   const navigate = useNavigate();
 
-  const token = useAppSelector((s) => s.auth.token);
-  const authHeaders = useMemo(() => (token ? { Authorization: `Bearer ${token}` } : {}), [token]);
-
   const fetchCanvases = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:9000/api/canvas", {
-        headers: { ...authHeaders },
-      });
-      if (!res.ok) throw new Error("Failed to fetch canvases");
-      const data = await res.json();
+      const { data } = await api.get("/api/canvas"); // Axios GET
       setCanvases(data);
-    } catch {
+    } catch (err) {
+      console.error(err);
       message.error("Could not load canvases");
     } finally {
       setLoading(false);
@@ -42,42 +36,31 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchCanvases();
-  }, [token]);
+  }, []);
 
   const handleCreateCanvas = async () => {
     if (!newCanvasName.trim()) return message.error("Please enter a name");
 
     try {
-      const res = await fetch("http://localhost:9000/api/canvas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeaders },
-        body: JSON.stringify({ name: newCanvasName }),
-      });
-      if (!res.ok) throw new Error();
-      const created = await res.json();
+      const { data: created } = await api.post("/api/canvas", { name: newCanvasName }); // Axios POST
       message.success("Canvas created!");
       setModalVisible(false);
       setNewCanvasName("");
       navigate(`/editor?canvasId=${created._id}`);
-    } catch {
+    } catch (err) {
+      console.error(err);
       message.error("Failed to create canvas");
     }
   };
 
   const deleteCanvas = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:9000/api/canvas/${id}`, {
-        method: "DELETE",
-        headers: { ...authHeaders },
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to delete canvas");
-      }
+      await api.delete(`/api/canvas/${id}`); // Axios DELETE
       message.success("Canvas deleted");
       setCanvases((prev) => prev.filter((c) => c._id !== id));
-    } catch (e: any) {
-      message.error(e.message);
+    } catch (err: any) {
+      console.error(err);
+      message.error(err.response?.data?.error || "Failed to delete canvas");
     }
   };
 

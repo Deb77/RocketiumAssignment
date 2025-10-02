@@ -11,7 +11,6 @@ import { useLocation } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useAppDispatch, useAppSelector } from "../store";
 import { CanvasActionsContext, CanvasStateContext } from "./CanvasContexts";
-import { SERVER_URL } from "./constants";
 import type {
   CanvasActionsContextType,
   CanvasStateContextType,
@@ -29,6 +28,7 @@ import {
   updateCanvasWidth as updateCanvasWidthHelper,
   updateProperty as updatePropertyHelper,
 } from "./canvasActions";
+import api from "../api";
 
 interface CanvasProviderProps {
   children: React.ReactNode;
@@ -155,14 +155,12 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
 
     const loadCanvas = async () => {
       try {
-        const res = await fetch(`${SERVER_URL}/api/canvas/${canvasId}`, {
-          headers: { ...authHeaders },
-        });
-        if (!res.ok) throw new Error("Canvas not found");
-        const data = await res.json();
+        const { data } = await api.get(`/api/canvas/${canvasId}`);
 
         detachHistoryListeners();
-        await canvas.loadFromJSON(data.data);
+        if(data.data){
+          await canvas.loadFromJSON(data.data); 
+        }
         canvas.renderAll();
         saveHistory();
         attachHistoryListeners();
@@ -176,14 +174,12 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
   }, [
     canvas,
     canvasId,
-    authHeaders,
     updateLayers,
     saveHistory,
     attachHistoryListeners,
     detachHistoryListeners,
   ]);
 
-  console.log("selection", selectedObject);
   useEffect(() => {
     if (!canvas) return;
 
@@ -294,12 +290,16 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
     const json = JSON.stringify(canvas.toJSON());
     const imageUrl = canvas.toDataURL();
 
-    await fetch(`${SERVER_URL}/api/canvas/${canvasId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", ...authHeaders },
-      body: JSON.stringify({ id: canvasId, data: json, image: imageUrl }),
-    });
-  }, [canvas, canvasId, authHeaders]);
+    try {
+      await api.put(`/api/canvas/${canvasId}`, {
+        id: canvasId,
+        data: json,
+        image: imageUrl,
+      });
+    } catch (err: any) {
+      console.error(err);
+    }
+  }, [canvas, canvasId]);
 
   useEffect(() => {
     if (canvasWidth != null) updateCanvasWidth(canvasWidth);

@@ -1,5 +1,3 @@
-export const SERVER_URL = "http://localhost:9000";
-
 export const CANVAS_MIN_SIZE = 100;
 export const CANVAS_MAX_SIZE = 2000;
 
