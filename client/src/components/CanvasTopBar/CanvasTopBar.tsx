@@ -83,7 +83,7 @@ const CanvasTopBar = () => {
       return;
     }
     try {
-      await api.post(`/canvas/${canvasId}/share-email`, {
+      await api.post(`/api/canvas/${canvasId}/share-email`, {
         email: shareEmail.trim(),
       });
       message.success("Collaborator added");
