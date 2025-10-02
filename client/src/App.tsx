@@ -3,6 +3,7 @@ import { Provider } from "react-redux";
 import HomePage from "./pages/HomePage";
 import EditorPage from "./pages/EditorPage";
 import { CanvasProvider } from "./context/CanvasProvider";
+import { MessageProvider } from "./context/MessageContext";
 import { store } from "./store";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -11,6 +12,7 @@ import RegisterPage from "./pages/RegisterPage";
 function App() {
   return (
     <Provider store={store}>
+      <MessageProvider>
       <Router>
         <Routes>
           <Route
@@ -35,6 +37,7 @@ function App() {
           <Route path="*" element={<LoginPage />} />
         </Routes>
       </Router>
+      </MessageProvider>
     </Provider>
   );
 }

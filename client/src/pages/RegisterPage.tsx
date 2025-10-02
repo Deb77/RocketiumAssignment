@@ -3,7 +3,8 @@ import { Card, Form, Input, Button, Typography, Alert } from "antd";
 import { useNavigate, Link } from "react-router-dom";
 import { useAppDispatch } from "../store";
 import { loginSuccess } from "../store/authSlice";
-import api from "../api"; // Axios instance
+import api from "../api"; 
+import { useMessage } from "../context/MessageContext";
 
 const { Title, Paragraph } = Typography;
 
@@ -12,6 +13,7 @@ const RegisterPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { success } = useMessage();
 
   const onFinish = async (values: { name: string; email: string; password: string }) => {
     setError(null);
@@ -19,6 +21,7 @@ const RegisterPage = () => {
     try {
       const { data } = await api.post("/api/auth/register", values);
       dispatch(loginSuccess({ token: data.token, user: data.user }));
+      success(data.message);
       navigate("/projects");
     } catch (e: any) {
       setError(e.response?.data?.message || e.message || "Registration failed");

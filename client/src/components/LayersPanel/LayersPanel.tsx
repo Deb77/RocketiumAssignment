@@ -5,7 +5,6 @@ import {
   Divider,
   Layout,
   Input,
-  message,
 } from "antd";
 import {
   UpOutlined,
@@ -17,6 +16,7 @@ import {
 import { useState, useCallback } from "react";
 import { useCanvasActions, useCanvasState } from "../../context/CanvasContexts";
 import styles from "./LayersPanel.module.css";
+import { useMessage } from "../../context/MessageContext";
 
 const { Title } = Typography;
 const { Sider } = Layout;
@@ -27,6 +27,7 @@ const LayerPanel = () => {
     useCanvasActions();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempName, setTempName] = useState("");
+  const { success } = useMessage();
 
   const startEditing = useCallback((currentName: string, layerId?: string) => {
     if (!layerId) return;
@@ -38,7 +39,7 @@ const LayerPanel = () => {
     renameLayer(editingId, tempName);
     setEditingId(null);
     setTempName("");
-    message.success("Layer name updated");
+    success("Layer name updated!");
   }
 
   return (

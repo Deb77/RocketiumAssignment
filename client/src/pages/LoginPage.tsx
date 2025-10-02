@@ -3,7 +3,8 @@ import { Card, Form, Input, Button, Typography, Alert } from "antd";
 import { useNavigate, Link } from "react-router-dom";
 import { useAppDispatch } from "../store";
 import { loginSuccess } from "../store/authSlice";
-import api from "../api"; // Axios instance
+import api from "../api"; 
+import { useMessage } from "../context/MessageContext";
 
 const { Title, Paragraph } = Typography;
 
@@ -12,6 +13,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { success } = useMessage();
 
   const onFinish = async (values: { email: string; password: string }) => {
     setError(null);
@@ -20,6 +22,7 @@ const LoginPage = () => {
       const { data } = await api.post("/api/auth/login", values);
       dispatch(loginSuccess({ token: data.token, user: data.user }));
       navigate("/projects", {replace: true});
+      success(data.message);
     } catch (e: any) {
       setError(e.response?.data?.message || e.message || "Login failed");
     } finally {

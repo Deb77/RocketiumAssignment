@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Spin, message, Typography } from "antd";
+import { Spin, Typography } from "antd";
 import CanvasList from "../components/CanvasList/CanvasList";
 import CreateCanvasModal from "../components/CreateCanvasModal/CreateCanvasModal";
 import api  from "../api"; 
+import { useMessage } from "../context/MessageContext";
 
 const { Title } = Typography;
 
@@ -20,15 +21,15 @@ export default function HomePage() {
   const [modalVisible, setModalVisible] = useState(false);
   const [newCanvasName, setNewCanvasName] = useState("");
   const navigate = useNavigate();
+  const { success, error } = useMessage();
 
   const fetchCanvases = async () => {
     setLoading(true);
     try {
       const { data } = await api.get("/api/canvas"); // Axios GET
       setCanvases(data);
-    } catch (err) {
-      console.error(err);
-      message.error("Could not load canvases");
+    } catch (err: any) {
+      error(err.response?.data?.error || "Failed to fetch canvases");
     } finally {
       setLoading(false);
     }
@@ -39,28 +40,28 @@ export default function HomePage() {
   }, []);
 
   const handleCreateCanvas = async () => {
-    if (!newCanvasName.trim()) return message.error("Please enter a name");
+    if (!newCanvasName.trim()) return error("Please enter a name");
 
     try {
       const { data: created } = await api.post("/api/canvas", { name: newCanvasName }); // Axios POST
-      message.success("Canvas created!");
+      success("Canvas created!");
       setModalVisible(false);
       setNewCanvasName("");
       navigate(`/editor?canvasId=${created._id}`);
     } catch (err) {
       console.error(err);
-      message.error("Failed to create canvas");
+      error("Failed to create canvas");
     }
   };
 
   const deleteCanvas = async (id: string) => {
     try {
-      await api.delete(`/api/canvas/${id}`); // Axios DELETE
-      message.success("Canvas deleted");
+      await api.delete(`/api/canvas/${id}`);
+      success("Canvas deleted");
       setCanvases((prev) => prev.filter((c) => c._id !== id));
     } catch (err: any) {
       console.error(err);
-      message.error(err.response?.data?.error || "Failed to delete canvas");
+      error(err.response?.data?.error || "Failed to delete canvas");
     }
   };
 

@@ -9,7 +9,6 @@ import {
   type UploadProps,
   Modal,
   Input,
-  message,
 } from "antd";
 import {
   UndoOutlined,
@@ -27,6 +26,7 @@ import { useAppDispatch, useAppSelector } from "../../store";
 import { setCanvasHeight, setCanvasWidth } from "../../store/uiSlice";
 import api from "../../api";
 import styles from "./CanvasTopBar.module.css";
+import { useMessage } from "../../context/MessageContext";
 
 const { Header } = Layout;
 
@@ -56,6 +56,8 @@ const CanvasTopBar = () => {
   const [shareOpen, setShareOpen] = useState(false);
   const [shareEmail, setShareEmail] = useState("");
 
+  const { success, error } = useMessage();
+
   const beforeUpload: UploadProps["beforeUpload"] = async (file) => {
     setLoading(true);
     try {
@@ -75,21 +77,22 @@ const CanvasTopBar = () => {
 
   const submitShare = async () => {
     if (!canvasId) {
-      message.error("No canvas selected");
+      error("No canvas selected");
       return;
     }
     if (!shareEmail.trim()) {
-      message.error("Enter an email to share with");
+      error("Enter an email to share with");
       return;
     }
     try {
-      await api.post(`/api/canvas/${canvasId}/share-email`, {
+      const response = await api.post(`/api/canvas/${canvasId}/share-email`, {
         email: shareEmail.trim(),
       });
-      message.success("Collaborator added");
+      
+      success(response.data.message);
       closeShare();
     } catch (e: any) {
-      message.error(e.response?.data?.error || e.message || "Failed to share");
+      error(e.response?.data?.error || e.message);
     }
   };
 

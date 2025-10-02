@@ -22,8 +22,9 @@ router.post("/register", async (req, res) => {
     });
 
     res.status(201).json({
-      user: { id: user._id, name: user.name, email: user.email },
+      user: { id: user._id, name: user.name, email: user.email},
       token,
+      message: "Registration successful!",
     });
   } catch (err) {
     console.error(err);
@@ -48,9 +49,8 @@ router.post("/login", async (req, res) => {
       expiresIn: "7d",
     });
 
-    res.json({ user: { id: user._id, name: user.name, email: user.email }, token });
+    res.json({ user: { id: user._id, name: user.name, email: user.email }, token, message: "Login successful!" });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
