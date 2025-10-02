@@ -1,8 +1,8 @@
-import CanvasTopBar from "../components/CanvasTopBar";
-import LayersPanel from "../components/LayersPanel";
-import CanvasBoard from "../components/CanvasBoard";
-import CanvasPropertiesPanel from "../components/PropertiesPanel";
 import { Layout } from "antd";
+import CanvasTopBar from "../components/CanvasTopBar/CanvasTopBar";
+import LayersPanel from "../components/LayersPanel/LayersPanel";
+import CanvasBoard from "../components/CanvasBoard/CanvasBoard";
+import CanvasPropertiesPanel from "../components/PropertiesPanel/PropertiesPanel";
 const { Content } = Layout;
 
 const EditorPage = () => {

@@ -1,18 +1,17 @@
-import { List, Button, Typography, Divider } from "antd";
+import { List, Button, Typography, Divider, Layout } from "antd";
 import { UpOutlined, DownOutlined } from "@ant-design/icons";
-import { useCanvas } from "../context/CanvasContext";
-import Sider from "antd/es/layout/Sider";
+import { useCanvas } from "../../context/CanvasContext";
+import styles from "./LayersPanel.module.css";
 
-const { Text } = Typography;
+const { Title } = Typography;
+const { Sider } = Layout;
 
 const LayerPanel = () => {
   const { layers, selectedLayerId, selectLayer, moveLayer } = useCanvas();
 
   return (
-    <Sider theme="light" style={{ padding: 16 }}>
-      <Text strong style={{ fontSize: 16 }}>
-        Layers
-      </Text>
+    <Sider theme="light" className={styles.container}>
+      <Title level={4}>Layers</Title>
       <Divider />
       <List
         dataSource={layers}
@@ -21,20 +20,14 @@ const LayerPanel = () => {
             style={{
               background:
                 layer.id === selectedLayerId ? "#e6f7ff" : "transparent",
-              borderRadius: 4,
-              marginBottom: 4,
-              cursor: "pointer",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: "4px 8px",
             }}
+            className={styles.listItem}
             onClick={() => selectLayer(layer.id)}
           >
             <span>
               {layer.type} (#{layer.zIndex})
             </span>
-            <div style={{ display: "flex", gap: 4 }}>
+            <div className={styles.buttonContainer}>
               <Button
                 size="small"
                 icon={<UpOutlined />}

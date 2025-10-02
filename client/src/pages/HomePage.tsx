@@ -1,24 +1,17 @@
 import { useEffect, useState } from "react";
-import {
-  List,
-  Button,
-  Card,
-  Spin,
-  message,
-  Typography,
-  Modal,
-  Input,
-} from "antd";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Spin, message, Typography } from "antd";
+import CanvasList from "../components/CanvasList/CanvasList";
+import CreateCanvasModal from "../components/CreateCanvasModal/CreateCanvasModal";
+
+const { Title } = Typography;
 
 type Canvas = {
   _id: string;
   name?: string;
   createdAt: string;
-  image?: string; // base64 image string
+  image?: string;
 };
-
-const { Title } = Typography;
 
 export default function HomePage() {
   const [canvases, setCanvases] = useState<Canvas[]>([]);
@@ -34,8 +27,7 @@ export default function HomePage() {
       if (!res.ok) throw new Error("Failed to fetch canvases");
       const data = await res.json();
       setCanvases(data);
-    } catch (err) {
-      console.error(err);
+    } catch {
       message.error("Could not load canvases");
     } finally {
       setLoading(false);
@@ -47,10 +39,7 @@ export default function HomePage() {
   }, []);
 
   const handleCreateCanvas = async () => {
-    if (!newCanvasName.trim()) {
-      message.error("Please enter a name");
-      return;
-    }
+    if (!newCanvasName.trim()) return message.error("Please enter a name");
 
     try {
       const res = await fetch("http://localhost:9000/api/canvas", {
@@ -58,14 +47,13 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newCanvasName }),
       });
-      if (!res.ok) throw new Error("Failed to create canvas");
+      if (!res.ok) throw new Error();
       const created = await res.json();
       message.success("Canvas created!");
       setModalVisible(false);
       setNewCanvasName("");
       navigate(`/editor?canvasId=${created._id}`);
-    } catch (err) {
-      console.error(err);
+    } catch {
       message.error("Failed to create canvas");
     }
   };
@@ -73,114 +61,15 @@ export default function HomePage() {
   return (
     <div style={{ padding: "2rem" }}>
       <Title level={3}>My Canvases</Title>
-      {loading ? (
-        <Spin />
-      ) : (
-        <List
-          grid={{ gutter: 16, column: 3 }}
-          dataSource={[{ isNew: true }, ...canvases]}
-          renderItem={(item) => {
-            // Type guard for the "new" card
-            const isNew = (item as any).isNew === true;
-            const canvas = item as Canvas;
-            return (
-              <List.Item>
-                <Card
-                  hoverable
-                  style={{
-                    height: 220,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    textAlign: "center",
-                    position: "relative",
-                    overflow: "hidden",
-                    padding: 0,
-                  }}
-                  bodyStyle={{ padding: 0, width: "100%", height: "100%" }}
-                >
-                  {isNew ? (
-                    <Button
-                      type="dashed"
-                      style={{ width: "100%", height: "100%" }}
-                      onClick={() => setModalVisible(true)}
-                    >
-                      + Create New Canvas
-                    </Button>
-                  ) : (
-                    <>
-                      {canvas.image && (
-                        <img
-                          src={
-                            canvas.image.startsWith("data:image")
-                              ? canvas.image
-                              : `data:image/png;base64,${canvas.image}`
-                          }
-                          alt={canvas.name}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
-                        />
-                      )}
-                      {/* Overlay */}
-                      <div
-                        style={{
-                          position: "absolute",
-                          bottom: 0,
-                          left: 0,
-                          width: "100%",
-                          height: "50%",
-                          background: "rgba(0,0,0,0.6)",
-                          color: "#fff",
-                          display: "flex",
-                          // flexDirection: "column",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <div style={{ textAlign: "left", padding: "0 8px" }}>
-                          <div style={{ fontWeight: "bold" }}>
-                            {canvas.name || "Untitled"}
-                          </div>
-                          <div style={{ fontSize: 12 }}>
-                            Created: {new Date(canvas.createdAt).toLocaleString()}
-                          </div>
-                        </div>
-
-                        <Link to={`/editor?canvasId=${canvas._id}`} style={{ padding: "0 8px" }}>
-                          <Button
-                            type="primary"
-                            size="large"
-                          >
-                            Open
-                          </Button>
-                        </Link>
-                      </div>
-                    </>
-                  )}
-                </Card>
-              </List.Item>
-            );
-          }}
-        />
-      )}
-
-      <Modal
-        title="Create New Canvas"
-        open={modalVisible}
+      {loading ? <Spin /> : <CanvasList canvases={canvases} onCreateClick={() => setModalVisible(true)} />}
+      <CreateCanvasModal
+        visible={modalVisible}
         onOk={handleCreateCanvas}
         onCancel={() => setModalVisible(false)}
-        okText="Create"
-      >
-        <Input
-          placeholder="Canvas name"
-          value={newCanvasName}
-          onChange={(e) => setNewCanvasName(e.target.value)}
-          onPressEnter={handleCreateCanvas}
-        />
-      </Modal>
+        value={newCanvasName}
+        onChange={setNewCanvasName}
+        onPressEnter={handleCreateCanvas}
+      />
     </div>
   );
 }

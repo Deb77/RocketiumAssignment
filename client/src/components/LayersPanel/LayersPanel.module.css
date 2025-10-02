@@ -1,0 +1,18 @@
+.container {
+  padding: 16px;
+}
+
+.listItem {
+  border-radius: 4px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+}
+
+.buttonContainer{
+    display: flex; 
+    gap: 4px
+}
