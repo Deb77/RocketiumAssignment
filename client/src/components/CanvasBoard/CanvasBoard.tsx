@@ -38,9 +38,9 @@ function CanvasBoard() {
       initCanvas.renderAll();
       setCanvas(initCanvas);
 
-      initCanvas.on("object:moving", onObjectMoving);
+      // initCanvas.on("object:moving", onObjectMoving);
 
-      initCanvas.on("object:modified", () => clearGuidelines(initCanvas));
+      // initCanvas.on("object:modified", () => clearGuidelines(initCanvas));
 
       return () => {
         initCanvas.off("object:moving", onObjectMoving);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Layout,
   Button,
@@ -15,35 +15,31 @@ import {
   DownloadOutlined,
   SaveOutlined,
 } from "@ant-design/icons";
-import { useCanvas } from "../../context/CanvasContext";
+import { useCanvasActions } from "../../context/CanvasContext";
 import { getBase64 } from "../../helpers/imageUploadHelpers";
 import styles from "./CanvasTopBar.module.css";
+import { useAppDispatch, useAppSelector } from "../../store";
+import { setCanvasHeight, setCanvasWidth } from "../../store/uiSlice";
 
 const { Header } = Layout;
 
-const Navbar = () => {
+const CanvasTopBar = () => {
   const {
     addRectangle,
     addCircle,
     addText,
     addImage,
-    updateCanvasHeight,
-    updateCanvasWidth,
     undo,
     redo,
-    isHistoryEmpty,
-    isRedoEmpty,
     downloadCanvasAsImage,
     saveCanvas,
-  } = useCanvas();
+  } = useCanvasActions();
+
+  const dispatch = useAppDispatch();
+  const { canvasWidth, canvasHeight, isHistoryEmpty, isRedoEmpty } =
+    useAppSelector((state) => state.ui);
 
   const [loading, setLoading] = useState(false);
-  const [canvasSize, setCanvasSize] = useState({ width: 500, height: 500 });
-
-  useEffect(() => {
-    updateCanvasWidth(canvasSize.width);
-    updateCanvasHeight(canvasSize.height);
-  }, [canvasSize, updateCanvasWidth, updateCanvasHeight]);
 
   const beforeUpload: UploadProps["beforeUpload"] = async (file) => {
     setLoading(true);
@@ -55,6 +51,9 @@ const Navbar = () => {
     }
     return false;
   };
+  useEffect(() => {
+    console.log("redo");
+  }, [redo]);
 
   const renderToolButton = (
     title: string,
@@ -112,25 +111,17 @@ const Navbar = () => {
       <div className={styles.canvasSizeContainer}>
         <span>Width</span>
         <InputNumber
-          min={100}
-          max={2000}
-          value={canvasSize.width}
-          onChange={(val) =>
-            setCanvasSize((prev) => ({ ...prev, width: val ?? prev.width }))
-          }
+          value={canvasWidth}
+          onChange={(val) => dispatch(setCanvasWidth(val ?? canvasWidth))}
         />
         <span>Height</span>
         <InputNumber
-          min={100}
-          max={2000}
-          value={canvasSize.height}
-          onChange={(val) =>
-            setCanvasSize((prev) => ({ ...prev, height: val ?? prev.height }))
-          }
+          value={canvasHeight}
+          onChange={(val) => dispatch(setCanvasHeight(val ?? canvasHeight))}
         />
       </div>
     </Header>
   );
 };
 
-export default Navbar;
+export default CanvasTopBar;
