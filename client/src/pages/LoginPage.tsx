@@ -19,7 +19,7 @@ const LoginPage = () => {
     try {
       const { data } = await api.post("/api/auth/login", values);
       dispatch(loginSuccess({ token: data.token, user: data.user }));
-      navigate("/projects");
+      navigate("/projects", {replace: true});
     } catch (e: any) {
       setError(e.response?.data?.message || e.message || "Login failed");
     } finally {

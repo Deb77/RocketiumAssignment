@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Layout,
   Button,
@@ -19,6 +19,7 @@ import {
   DownloadOutlined,
   SaveOutlined,
   ShareAltOutlined,
+  ArrowLeftOutlined
 } from "@ant-design/icons";
 import { useCanvasActions } from "../../context/CanvasContexts";
 import { getBase64 } from "../../helpers/imageUploadHelpers";
@@ -44,6 +45,8 @@ const CanvasTopBar = () => {
   const dispatch = useAppDispatch();
   const { canvasWidth, canvasHeight, isHistoryEmpty, isRedoEmpty } =
     useAppSelector((state) => state.ui);
+  const navigate = useNavigate();
+  const goBack = () => navigate(-1);
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -113,7 +116,11 @@ const CanvasTopBar = () => {
 
   return (
     <Header className={styles.container}>
-      <div className={styles.projectTitle}>My Project</div>
+      <div className={styles.projectTitle}>
+        <Button onClick={goBack} style={{ marginRight: 8 }} icon={<ArrowLeftOutlined />}>
+        </Button>
+        My Project
+      </div>
       <div className={styles.toolsContainer}>
         {renderToolButton("Add Circle", "○", addCircle)}
         {renderToolButton("Add Rectangle", "▭", addRectangle)}

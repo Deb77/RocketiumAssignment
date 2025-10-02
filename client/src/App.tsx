@@ -9,8 +9,6 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import RegisterPage from "./pages/RegisterPage";
 
 function App() {
-
-  console.log("API Base URL:", import.meta.env.VITE_SERVER_URL);
   return (
     <Provider store={store}>
       <Router>
@@ -23,7 +21,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route
             path="/editor"
@@ -35,6 +32,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="*" element={<LoginPage />} />
         </Routes>
       </Router>
     </Provider>
