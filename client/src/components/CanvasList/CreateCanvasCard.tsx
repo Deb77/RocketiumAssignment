@@ -7,7 +7,7 @@ type Props = {
 
 export default function CreateCanvasCard({ onClick }: Props) {
   return (
-    <Card hoverable className={styles.canvasCard} bodyStyle={{ padding: 0 }}>
+    <Card hoverable className={styles.canvasCard} styles={{ body: { padding: 0 }}}>
       <Button type="dashed" className={styles.createButton} onClick={onClick}>
         + Create New Canvas
       </Button>

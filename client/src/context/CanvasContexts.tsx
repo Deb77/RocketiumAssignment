@@ -8,16 +8,6 @@ export const CanvasActionsContext = createContext<
   CanvasActionsContextType | undefined
 >(undefined);
 
-export const useCanvas = (): CanvasStateContextType &
-  CanvasActionsContextType => {
-  const state = useContext(CanvasStateContext);
-  const actions = useContext(CanvasActionsContext);
-  if (!state || !actions) {
-    throw new Error("useCanvas must be used within a CanvasProvider");
-  }
-  return { ...state, ...actions };
-};
-
 export const useCanvasState = (): CanvasStateContextType => {
   const state = useContext(CanvasStateContext);
   if (!state) {

@@ -5,7 +5,7 @@ import {
   type BasicTransformEvent,
   type TPointerEvent,
 } from "fabric";
-import { useCanvas } from "../../context/CanvasContext";
+import { useCanvasState } from "../../context/CanvasContexts";
 import {
   handleObjectMoving,
   clearGuidelines,
@@ -13,7 +13,7 @@ import {
 import styles from "./CanvasBoard.module.css";
 
 function CanvasBoard() {
-  const { canvas, setCanvas } = useCanvas();
+  const { canvas, setCanvas } = useCanvasState();
   const canvasRef = useRef(null);
   const [guidelines, setGuidelines] = useState([]);
   
@@ -43,8 +43,8 @@ function CanvasBoard() {
       // initCanvas.on("object:modified", () => clearGuidelines(initCanvas));
 
       return () => {
-        initCanvas.off("object:moving", onObjectMoving);
-        initCanvas.off("object:modified", () => clearGuidelines(initCanvas));
+        // initCanvas.off("object:moving", onObjectMoving);
+        // initCanvas.off("object:modified", () => clearGuidelines(initCanvas));
         initCanvas.dispose();
       };
     }
@@ -52,7 +52,7 @@ function CanvasBoard() {
 
   return (
     <div className={styles.container}>
-      <canvas id="canvas" ref={canvasRef}></canvas>{" "}
+      <canvas id="canvas" ref={canvasRef}></canvas>
     </div>
   );
 }

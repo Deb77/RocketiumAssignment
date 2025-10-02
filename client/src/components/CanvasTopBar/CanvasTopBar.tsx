@@ -1,4 +1,5 @@
-import { memo, useState } from "react";
+import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Layout,
   Button,
@@ -19,12 +20,11 @@ import {
   SaveOutlined,
   ShareAltOutlined,
 } from "@ant-design/icons";
-import { useCanvasActions } from "../../context/CanvasContext";
+import { useCanvasActions } from "../../context/CanvasContexts";
 import { getBase64 } from "../../helpers/imageUploadHelpers";
-import styles from "./CanvasTopBar.module.css";
 import { useAppDispatch, useAppSelector } from "../../store";
 import { setCanvasHeight, setCanvasWidth } from "../../store/uiSlice";
-import { useLocation } from "react-router-dom";
+import styles from "./CanvasTopBar.module.css";
 
 const { Header } = Layout;
 
@@ -79,14 +79,17 @@ const CanvasTopBar = () => {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:9000/api/canvas/${canvasId}/share-email`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ email: shareEmail.trim() }),
-      });
+      const res = await fetch(
+        `http://localhost:9000/api/canvas/${canvasId}/share-email`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ email: shareEmail.trim() }),
+        }
+      );
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Failed to share");
       message.success("Collaborator added");
@@ -184,4 +187,4 @@ const CanvasTopBar = () => {
   );
 };
 
-export default memo(CanvasTopBar);
+export default CanvasTopBar;

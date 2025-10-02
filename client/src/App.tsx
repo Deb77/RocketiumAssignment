@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import HomePage from "./pages/HomePage";
 import EditorPage from "./pages/EditorPage";
-import { CanvasProvider } from "./context/CanvasContext";
+import { CanvasProvider } from "./context/CanvasProvider";
 import { store } from "./store";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./routes/ProtectedRoute";

@@ -12,13 +12,13 @@
   font-size: 18px;
 }
 
-.toolsContainer{
-    display: flex;
-    gap: 12px;
+.toolsContainer {
+  display: flex;
+  gap: 12px;
 }
 
 .canvasSizeContainer {
-    display: flex;
-    gap: 8px;
-    align-items: center;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }

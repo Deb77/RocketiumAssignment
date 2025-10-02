@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import { Input, Slider, Typography, Divider, Layout } from "antd";
+import { Input, Slider, Typography, Divider, Layout, Empty } from "antd";
 import type { Circle, Textbox } from "fabric";
-import { useCanvas } from "../../context/CanvasContext";
+import { useCanvasState, useCanvasActions } from "../../context/CanvasContexts";
 import styles from "./PropertiesPanel.module.css";
 
 const { Title } = Typography;
 const { Sider } = Layout;
 
 const CanvasPropertiesPanel = () => {
-  const { selectedObject, updateProperty, version } = useCanvas();
+  const { selectedObject } = useCanvasState();
+  const { updateProperty } = useCanvasActions();
 
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
@@ -36,7 +37,7 @@ const CanvasPropertiesPanel = () => {
         setFontSize((selectedObject as Textbox).fontSize || 16);
         break;
     }
-  }, [selectedObject, version]);
+  }, [selectedObject]);
 
   const commonColorInput = (
     <>
@@ -82,13 +83,12 @@ const CanvasPropertiesPanel = () => {
     <Sider
       theme="light"
       width={260}
-      style={{
-        right: selectedObject ? 0 : -260,
-      }}
       className={styles.container}
     >
       <Title level={4}>Properties</Title>
       <Divider />
+
+      {!selectedObject && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ paddingTop: 40}}/>}
 
       {selectedObject?.type === "circle" && (
         <>

@@ -4,13 +4,14 @@ import * as fabric from "fabric";
 export interface LayeredObject extends fabric.FabricObject {
   id?: string;
   zIndex?: number;
+  name?: string;
 }
 
 export interface CanvasStateContextType {
   canvas: fabric.Canvas | null;
   setCanvas: React.Dispatch<React.SetStateAction<fabric.Canvas | null>>;
   selectedObject: fabric.FabricObject | null;
-  version: number;
+  // version: number;
   layers: LayeredObject[];
   selectedLayerId: string | null;
 }
@@ -29,4 +30,6 @@ export interface CanvasActionsContextType {
   redo: () => void;
   downloadCanvasAsImage: (filename?: string) => void;
   saveCanvas: () => Promise<void>;
+  deleteLayer: (id?: string) => void;
+  renameLayer: (id: string | null, newName: string) => void;
 }
