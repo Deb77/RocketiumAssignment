@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Spin, message, Typography } from "antd";
 import CanvasList from "../components/CanvasList/CanvasList";
 import CreateCanvasModal from "../components/CreateCanvasModal/CreateCanvasModal";
+import { useAppSelector } from "../store";
 
 const { Title } = Typography;
 
@@ -20,10 +21,15 @@ export default function HomePage() {
   const [newCanvasName, setNewCanvasName] = useState("");
   const navigate = useNavigate();
 
+  const token = useAppSelector((s) => s.auth.token);
+  const authHeaders = useMemo(() => (token ? { Authorization: `Bearer ${token}` } : {}), [token]);
+
   const fetchCanvases = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:9000/api/canvas");
+      const res = await fetch("http://localhost:9000/api/canvas", {
+        headers: { ...authHeaders },
+      });
       if (!res.ok) throw new Error("Failed to fetch canvases");
       const data = await res.json();
       setCanvases(data);
@@ -36,7 +42,7 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchCanvases();
-  }, []);
+  }, [token]);
 
   const handleCreateCanvas = async () => {
     if (!newCanvasName.trim()) return message.error("Please enter a name");
@@ -44,7 +50,7 @@ export default function HomePage() {
     try {
       const res = await fetch("http://localhost:9000/api/canvas", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({ name: newCanvasName }),
       });
       if (!res.ok) throw new Error();
@@ -58,10 +64,31 @@ export default function HomePage() {
     }
   };
 
+  const deleteCanvas = async (id: string) => {
+    try {
+      const res = await fetch(`http://localhost:9000/api/canvas/${id}`, {
+        method: "DELETE",
+        headers: { ...authHeaders },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to delete canvas");
+      }
+      message.success("Canvas deleted");
+      setCanvases((prev) => prev.filter((c) => c._id !== id));
+    } catch (e: any) {
+      message.error(e.message);
+    }
+  };
+
   return (
     <div style={{ padding: "2rem" }}>
       <Title level={3}>My Canvases</Title>
-      {loading ? <Spin /> : <CanvasList canvases={canvases} onCreateClick={() => setModalVisible(true)} />}
+      {loading ? (
+        <Spin />
+      ) : (
+        <CanvasList canvases={canvases} onCreateClick={() => setModalVisible(true)} onDelete={deleteCanvas} />
+      )}
       <CreateCanvasModal
         visible={modalVisible}
         onOk={handleCreateCanvas}

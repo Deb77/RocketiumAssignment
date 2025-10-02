@@ -4,19 +4,33 @@ import HomePage from "./pages/HomePage";
 import EditorPage from "./pages/EditorPage";
 import { CanvasProvider } from "./context/CanvasContext";
 import { store } from "./store";
+import LoginPage from "./pages/LoginPage";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import RegisterPage from "./pages/RegisterPage";
 
 function App() {
   return (
     <Provider store={store}>
       <Router>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route
+            path="/projects"
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route
             path="/editor"
             element={
-              <CanvasProvider>
-                <EditorPage />
-              </CanvasProvider>
+              <ProtectedRoute>
+                <CanvasProvider>
+                  <EditorPage />
+                </CanvasProvider>
+              </ProtectedRoute>
             }
           />
         </Routes>

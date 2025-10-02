@@ -1,0 +1,57 @@
+import { useState } from "react";
+import { Card, Form, Input, Button, Typography, Alert } from "antd";
+import { useNavigate, Link } from "react-router-dom";
+import { useAppDispatch } from "../store";
+import { loginSuccess } from "../store/authSlice";
+
+const { Title, Paragraph } = Typography;
+
+const LoginPage = () => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const onFinish = async (values: { email: string; password: string }) => {
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:9000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Login failed");
+      dispatch(loginSuccess({ token: data.token, user: data.user }));
+      navigate("/projects");
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Card style={{ width: 360 }}>
+        <Title level={3} style={{ textAlign: "center" }}>Sign In</Title>
+        {error && <Alert type="error" message={error} style={{ marginBottom: 12 }} />}
+        <Form layout="vertical" onFinish={onFinish}>
+          <Form.Item name="email" label="Email" rules={[{ required: true, type: "email" }]}>
+            <Input placeholder="you@example.com" />
+          </Form.Item>
+          <Form.Item name="password" label="Password" rules={[{ required: true }] }>
+            <Input.Password placeholder="••••••••" />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" block loading={loading}>Login</Button>
+        </Form>
+        <Paragraph style={{ marginTop: 12, textAlign: "center" }}>
+          Don't have an account? <Link to="/register">Create one</Link>
+        </Paragraph>
+      </Card>
+    </div>
+  );
+};
+
+export default LoginPage;

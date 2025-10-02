@@ -12,9 +12,10 @@ type Canvas = {
 type Props = {
   canvases: Canvas[];
   onCreateClick: () => void;
+  onDelete?: (id: string) => void;
 };
 
-export default function CanvasList({ canvases, onCreateClick }: Props) {
+export default function CanvasList({ canvases, onCreateClick, onDelete }: Props) {
   return (
     <List
       grid={{ gutter: 16, column: 3 }}
@@ -24,7 +25,7 @@ export default function CanvasList({ canvases, onCreateClick }: Props) {
           {item.isNew ? (
             <CreateCanvasCard onClick={onCreateClick} />
           ) : (
-            <CanvasCard {...item} />
+            <CanvasCard {...item} onDelete={onDelete} />
           )}
         </List.Item>
       )}

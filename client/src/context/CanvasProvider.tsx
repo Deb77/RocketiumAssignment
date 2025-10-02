@@ -54,6 +54,8 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
   const socketRef = useRef<Socket | null>(null);
 
   const { canvasWidth, canvasHeight } = useAppSelector((s) => s.ui);
+  const token = useAppSelector((s) => s.auth.token);
+  const authHeaders = useMemo(() => (token ? { Authorization: `Bearer ${token}` } : {}), [token]);
   const dispatch = useAppDispatch();
 
   const location = useLocation();
@@ -126,7 +128,11 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
 
     const loadCanvas = async () => {
       try {
-        const res = await fetch(`http://localhost:9000/api/canvas/${canvasId}`);
+        const res = await fetch(`http://localhost:9000/api/canvas/${canvasId}`, {
+          headers: {
+            ...authHeaders,
+          },
+        });
         if (!res.ok) throw new Error("Canvas not found");
         const data = await res.json();
 
@@ -211,7 +217,7 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
 
     await fetch(`http://localhost:9000/api/canvas/${canvasId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders },
       body: JSON.stringify({ id: canvasId, data: json, image: imageUrl }),
     });
   }, [canvas, canvasId]);

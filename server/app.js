@@ -6,6 +6,8 @@ import http from "http";
 import { Server } from "socket.io";
 
 import canvasRoutes from "./routes/Canvas.js";
+import authRoutes from "./routes/auth.js";
+import { requireAuth } from "./middleware/auth.js";
 
 dotenv.config();
 
@@ -13,7 +15,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/canvas", canvasRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/canvas", requireAuth, canvasRoutes);
 
 const server = http.createServer(app);
 const io = new Server(server, {
