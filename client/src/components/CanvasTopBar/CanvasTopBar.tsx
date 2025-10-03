@@ -149,7 +149,7 @@ const CanvasTopBar = () => {
         {renderToolButton(
           "Download",
           <DownloadOutlined />,
-          downloadCanvasAsImage,
+          () => downloadCanvasAsImage("Default.png"),
           { shape: "default" }
         )}
         {renderToolButton("Save", <SaveOutlined />, saveCanvas, {
