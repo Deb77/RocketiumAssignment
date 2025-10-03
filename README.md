@@ -125,8 +125,8 @@
 
 ## 📸 Screenshots 
 
-[![Screenshot 1](https://i.ibb.co/fdJ7Ktsn/Screenshot-2025-10-03-at-9-06-00-AM.png)](https://ibb.co/5hZVzvPn)
-[![Screenshot 2](https://i.ibb.co/cX7Xq5kx/Screenshot-2025-10-03-at-9-10-36-AM.png)](https://ibb.co/pr9rqDbn)
+[![Screenshot 1](https://i.ibb.co/fdJ7Ktsn/Screenshot-2025-10-03-at-9-06-00-AM.png)](https://i.ibb.co/fdJ7Ktsn/Screenshot-2025-10-03-at-9-06-00-AM.png)
+[![Screenshot 2](https://i.ibb.co/cX7Xq5kx/Screenshot-2025-10-03-at-9-10-36-AM.png)](https://i.ibb.co/cX7Xq5kx/Screenshot-2025-10-03-at-9-10-36-AM.png)
 
 
 ---
