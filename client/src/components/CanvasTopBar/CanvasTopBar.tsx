@@ -18,12 +18,13 @@ import {
   DownloadOutlined,
   SaveOutlined,
   ShareAltOutlined,
-  ArrowLeftOutlined
+  ArrowLeftOutlined,
+  CommentOutlined,
 } from "@ant-design/icons";
 import { useCanvasActions } from "../../context/CanvasContexts";
 import { getBase64 } from "../../helpers/imageUploadHelpers";
 import { useAppDispatch, useAppSelector } from "../../store";
-import { setCanvasHeight, setCanvasWidth } from "../../store/uiSlice";
+import { setCanvasHeight, setCanvasWidth, setIsCommentMode } from "../../store/uiSlice";
 import api from "../../api";
 import styles from "./CanvasTopBar.module.css";
 import { useMessage } from "../../context/MessageContext";
@@ -43,7 +44,7 @@ const CanvasTopBar = () => {
   } = useCanvasActions();
 
   const dispatch = useAppDispatch();
-  const { canvasWidth, canvasHeight, isHistoryEmpty, isRedoEmpty } =
+  const { canvasWidth, canvasHeight, isHistoryEmpty, isRedoEmpty, isCommentMode } =
     useAppSelector((state) => state.ui);
   const navigate = useNavigate();
   const goBack = () => navigate(-1);
@@ -57,7 +58,7 @@ const CanvasTopBar = () => {
   const [shareOpen, setShareOpen] = useState(false);
   const [shareEmail, setShareEmail] = useState("");
 
-  const { success, error } = useMessage();
+  const { success, error, info } = useMessage();
 
   const beforeUpload: UploadProps["beforeUpload"] = async (file) => {
     setLoading(true);
@@ -157,6 +158,19 @@ const CanvasTopBar = () => {
         {renderToolButton("Share", <ShareAltOutlined />, openShare, {
           shape: "default"
         })}
+        {renderToolButton(
+          isCommentMode ? "Exit Comment Mode" : "Enter Comment Mode",
+          <CommentOutlined />,
+          () => {
+            const next = !isCommentMode;
+            dispatch(setIsCommentMode(next));
+            if (next) {
+              info("Comment mode enabled. Click on the canvas to add a comment.");
+            }else{
+              info("Comment mode disabled.");
+            }
+          }
+        )}
       </div>
 
       <div className={styles.canvasSizeContainer}>

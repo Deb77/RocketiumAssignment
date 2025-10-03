@@ -5,6 +5,7 @@ export interface UIState {
   canvasHeight: number;
   isHistoryEmpty: boolean;
   isRedoEmpty: boolean;
+  isCommentMode: boolean;
 }
 
 const initialState: UIState = {
@@ -12,6 +13,7 @@ const initialState: UIState = {
   canvasHeight: 500,
   isHistoryEmpty: true,
   isRedoEmpty: true,
+  isCommentMode: false,
 };
 
 const uiSlice = createSlice({
@@ -28,8 +30,11 @@ const uiSlice = createSlice({
       state.isHistoryEmpty = action.payload.isHistoryEmpty;
       state.isRedoEmpty = action.payload.isRedoEmpty;
     },
+    setIsCommentMode(state, action: PayloadAction<boolean>) {
+      state.isCommentMode = action.payload;
+    },
   },
 });
 
-export const { setCanvasWidth, setCanvasHeight, setHistoryFlags } = uiSlice.actions;
+export const { setCanvasWidth, setCanvasHeight, setHistoryFlags, setIsCommentMode } = uiSlice.actions;
 export default uiSlice.reducer;
