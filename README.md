@@ -1,9 +1,5 @@
 # 🚀 Rocketium Full Stack Assignment
 
-![GitHub repo size](https://img.shields.io/github/repo-size/Deb77/RocketiumAssignment)
-![GitHub issues](https://img.shields.io/github/issues/Deb77/RocketiumAssignment)
-![GitHub license](https://img.shields.io/github/license/Deb77/RocketiumAssignment)
-
 > This project is a lightweight, web-based design tool that enables users to create, edit, and organize vector-based designs effortlessly. It includes a canvas, object and layer management, and real-time collaboration for quick prototyping and UI/UX experimentation.
 
 ---
