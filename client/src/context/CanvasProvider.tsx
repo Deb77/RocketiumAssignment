@@ -29,6 +29,7 @@ import {
   updateProperty as updatePropertyHelper,
 } from "./canvasActions";
 import api from "../api";
+import { useMessage } from '../context/MessageContext'
 
 interface CanvasProviderProps {
   children: React.ReactNode;
@@ -41,15 +42,11 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
   // const [version, setVersion] = useState(1); -> not sure why i added this initially
   const [layers, setLayers] = useState<LayeredObject[]>([]);
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
+  const { success, error } = useMessage();
 
   const socketRef = useRef<Socket | null>(null);
 
   const { canvasWidth, canvasHeight } = useAppSelector((s) => s.ui);
-  const token = useAppSelector((s) => s.auth.token);
-  const authHeaders = useMemo(
-    () => (token ? { Authorization: `Bearer ${token}` } : {}),
-    [token]
-  );
   const dispatch = useAppDispatch();
 
   const location = useLocation();
@@ -291,13 +288,15 @@ export const CanvasProvider: React.FC<CanvasProviderProps> = ({ children }) => {
     const imageUrl = canvas.toDataURL();
 
     try {
-      await api.put(`/api/canvas/${canvasId}`, {
+      const response = await api.put(`/api/canvas/${canvasId}`, {
         id: canvasId,
         data: json,
         image: imageUrl,
       });
+      success(response.data.message);
     } catch (err: any) {
       console.error(err);
+      error(err.response?.data?.error || err.message);
     }
   }, [canvas, canvasId]);
 

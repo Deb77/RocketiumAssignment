@@ -1,6 +1,7 @@
 import { Router } from "express";
 import Canvas from "../models/Canvas.js";
 import User from "../models/User.js";
+import redisClient from "../redisClient.js";
 
 const router = Router();
 
@@ -33,10 +34,14 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const userId = req.user.id;
+    const canvasFromCache = await redisClient.get(`canvas:${req.params.id}`);
     const canvas = await Canvas.findOne({
       _id: req.params.id,
       $or: [{ owner: userId }, { collaborators: userId }],
     });
+    if (canvasFromCache) {
+      res.json({ ...canvas, data: JSON.parse(canvasFromCache)})
+    }
     if (!canvas) return res.status(404).json({ error: "Canvas not found" });
     res.json(canvas);
   } catch (err) {
@@ -100,7 +105,7 @@ router.put("/:id", async (req, res) => {
       { new: true }
     );
     if (!canvas) return res.status(404).json({ error: "Canvas not found" });
-    res.json(canvas);
+    res.json({ message: "Canvas updated!", canvas });
   } catch (err) {
     res.status(500).json({ error: "Failed to update canvas" });
   }

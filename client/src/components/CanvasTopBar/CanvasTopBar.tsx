@@ -53,6 +53,7 @@ const CanvasTopBar = () => {
   const canvasId = params.get("canvasId");
 
   const [loading, setLoading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareEmail, setShareEmail] = useState("");
 
@@ -85,14 +86,16 @@ const CanvasTopBar = () => {
       return;
     }
     try {
+      setIsSharing(true);
       const response = await api.post(`/api/canvas/${canvasId}/share-email`, {
         email: shareEmail.trim(),
       });
-      
       success(response.data.message);
       closeShare();
     } catch (e: any) {
       error(e.response?.data?.error || e.message);
+    }finally{
+      setIsSharing(false);
     }
   };
 
@@ -152,7 +155,7 @@ const CanvasTopBar = () => {
           shape: "default",
         })}
         {renderToolButton("Share", <ShareAltOutlined />, openShare, {
-          shape: "default",
+          shape: "default"
         })}
       </div>
 
@@ -175,7 +178,7 @@ const CanvasTopBar = () => {
         onOk={submitShare}
         onCancel={closeShare}
         okText="Share"
-        okButtonProps={{ disabled: !shareEmail.trim() }}
+        okButtonProps={{ disabled: !shareEmail.trim(), loading: isSharing }}
       >
         <Input
           placeholder="collaborator@example.com"

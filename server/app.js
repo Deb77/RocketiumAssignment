@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import canvasRoutes from "./routes/Canvas.js";
 import authRoutes from "./routes/auth.js";
 import { requireAuth } from "./middleware/auth.js";
+import redisClient from "./redisClient.js"; 
 
 dotenv.config();
 
@@ -26,24 +27,34 @@ const io = new Server(server, {
   },
 });
 
-const canvasStates = {}; // redis?
-
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  socket.on("join-canvas", (canvasId) => {
+  socket.on("join-canvas", async (canvasId) => {
     socket.join(canvasId);
     console.log(`${socket.id} joined canvas ${canvasId}`);
 
-    if (canvasStates[canvasId]) {
-      socket.emit("canvas-state", canvasStates[canvasId]);
+    try {
+      const state = await redisClient.get(`canvas:${canvasId}`);
+      if (state) {
+        socket.emit("canvas-state", JSON.parse(state));
+      }
+    } catch (err) {
+      console.error("Redis get error:", err);
     }
   });
 
-  socket.on("canvas-update", ({ canvasId, json }) => {
-    canvasStates[canvasId] = json; 
-    console.log(`Canvas ${canvasId} updated by ${socket.id}`);
-    socket.to(canvasId).emit("canvas-update", {canvasId, json}); // broadcast to others
+  socket.on("canvas-update", async ({ canvasId, json }) => {
+    try {
+      await redisClient.set(`canvas:${canvasId}`, JSON.stringify(json), {
+        EX: 60
+      });
+
+      console.log(`Canvas ${canvasId} updated by ${socket.id}`);
+      socket.to(canvasId).emit("canvas-update", { canvasId, json });
+    } catch (err) {
+      console.error("Redis set error:", err);
+    }
   });
 
   socket.on("disconnect", () => {
@@ -51,10 +62,22 @@ io.on("connection", (socket) => {
   });
 });
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+async function startServer() {
+  try {
+    await redisClient.connect();
+    console.log("Redis connected");
 
-const PORT = process.env.PORT || 6000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("MongoDB connected");
+
+    const PORT = process.env.PORT || 6000;
+    server.listen(PORT, () => {
+      console.log(` Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error("Error starting server:", err);
+    process.exit(1);
+  }
+}
+
+startServer();

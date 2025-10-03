@@ -28,7 +28,6 @@ export const useCanvasHistory = ({ canvas, canvasId, socketRef, dispatch, update
   const saveHistory = useCallback(() => {
     if (!canvas) return;
     const json = canvas.toJSON();
-    console.log("Saving history", json);
     historyRef.current = [...historyRef.current, JSON.stringify(json)];
     redoRef.current = [];
     updateHistoryFlags();
